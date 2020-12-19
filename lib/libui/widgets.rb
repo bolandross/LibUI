@@ -63,14 +63,14 @@ module LibUI
 
   h1 = Hash.new([])
   FFI.ffi_methods.each do |m|
-    h2[m] = widget_names.select do |n|
+    h1[m] = widget_names.select do |n|
       m.match(/ui#{n}/)
     end.max_by { |n| n.length }
   end
 
   # invert
-  h2 = h2.each_key.group_by do |key|
-    h2[key]
+  h2 = h1.each_key.group_by do |key|
+    h1[key]
   end
 
   h2.each do |widget_name, method_names|
@@ -80,6 +80,7 @@ module LibUI
       widget_name,
       Class.new do
         define_method 'initialize' do |*args|
+          # FIXME: UI.init
           @ptr = LibUI.public_send("new_#{LibUI::Utils.underscore(widget_name)}", *args)
         end
 
@@ -87,6 +88,7 @@ module LibUI
           @ptr
         end
 
+        # FIXME: Define method inheritance, e.g. Box
         method_names.each do |original_method_name|
           m = 'ui' + original_method_name[(2 + widget_name.size)..-1]
           method_name = Utils.convert_to_ruby_method(m)
